@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>站务月检月考</title>
+<style>
+:root { --primary: #2563eb; --success: #16a34a; --danger: #dc2626; --warn: #f59e0b; --bg: #f3f4f6; --card: #ffffff; --text: #1f2937; --text-light: #6b7280; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.6; }
+.container { max-width: 900px; margin: 0 auto; background: var(--card); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+h1 { text-align: center; color: var(--text); margin-bottom: 5px; }
+.subtitle { text-align: center; color: var(--text-light); margin-bottom: 25px; font-size: 14px; }
+.info-section { background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+.info-section label { font-weight: 600; display: block; margin-bottom: 5px; }
+.info-section input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 15px; box-sizing: border-box; }
+.info-section input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+.q-block { padding: 15px; margin-bottom: 20px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fafafa; }
+.q-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.q-type { background: var(--primary); color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+.q-text { font-weight: 600; font-size: 15px; }
+.options label { display: flex; align-items: flex-start; padding: 8px 10px; margin: 6px 0; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
+.options label:hover { background: #eef2ff; }
+.options input { margin-right: 10px; margin-top: 4px; }
+.btn-group { text-align: center; margin-top: 30px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+button { padding: 12px 28px; font-size: 16px; cursor: pointer; border: none; border-radius: 8px; font-weight: 500; transition: all 0.2s; }
+.btn-submit { background: var(--success); color: white; }
+.btn-submit:hover { background: #15803d; }
+.btn-submit:disabled { background: #9ca3af; cursor: not-allowed; }
+.btn-admin { background: var(--warn); color: white; display: none; margin: 15px auto 0; }
+.btn-admin:hover { background: #d97706; }
+.result-box { margin-top: 25px; padding: 20px; border-radius: 8px; text-align: center; font-size: 18px; font-weight: bold; display: none; animation: fadeIn 0.5s; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.opt-correct { background: #dcfce7 !important; border-left: 3px solid var(--success); }
+.opt-wrong { background: #fee2e2 !important; border-left: 3px solid var(--danger); }
+.q-result { font-size: 13px; margin-top: 8px; color: var(--text-light); }
+.q-result span { color: var(--success); font-weight: bold; }
+#statusMsg { display: none; text-align: center; padding: 40px 20px; background: #f8fafc; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+#statusMsg h2 { color: var(--danger); margin: 0 0 10px; }
+#statusMsg p { color: var(--text-light); margin: 5px 0; }
+#historyScore { font-size: 18px; font-weight: bold; margin-top: 15px !important; }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>站务月检月考</h1>
+    <div class="subtitle">系统随机抽取 25 题，每题 4 分，满分 100 分。选项顺序已随机打乱。</div>
+    
+    <div id="statusMsg">
+        <h2 id="lockTitle">⛔ 考试机会已使用</h2>
+        <p id="lockDesc">本设备仅支持一次考试，刷新/重新进入无法重置。</p>
+        <p id="historyScore"></p>
+        <button type="button" class="btn-admin" id="adminResetBtn" onclick="adminUnlock()">🔐 管理员密码解锁重考</button>
+    </div>
+
+    <div id="quizArea">
+        <form id="quizForm" onsubmit="return false;">
+            <div class="info-section">
+                <label for="userName">👤 考生姓名：</label>
+                <input type="text" id="userName" placeholder="请输入您的真实姓名（提交后不可修改）" required>
+            </div>
+            <div id="questionsContainer"></div>
+            <div class="btn-group">
+                <button type="button" class="btn-submit" id="submitBtn" onclick="submitQuiz()">提交试卷</button>
+            </div>
+        </form>
+        <div id="resultBox" class="result-box"></div>
+    </div>
+</div>
+
+<script>
+const ADMIN_PASSWORD = 'caes2024';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx2EUbrP9BtkLDmES-fnxS8AtbUzE_8Di4MROK36RkweOwyHkpffcgqc4SF7p0eDLr67Q/exec';
+
+const rawBank = [
+{id:1, q:"车机下高压执行失败，界面报错车机下高压超时，可尝试在界面换电管理到换电流程监控，点击按钮重新下发下高压指令", type:"single", opts:["正确","错误"], ans:["正确"]},
+{id:2, q:"锂离子电池灭火最好的方法是（）", type:"single", opts:["用水灭火","用干粉灭火器","用二氧化碳灭火器"], ans:["用水灭火"]},
+{id:3, q:"现场管理6S要求中关于安全模块说法错误的是", type:"single", opts:["非专业人员不得安装、维护和检修此产品系统，与换电站作业无关人员不得进入换电站","在操作中，可以佩戴戒指、手表、钥匙环等金属物品，并做好安全防护工作","严格按照换电站操作规程进行换电作业","操作系统前，确保该系统已可靠接地，对停车平台、换电装置、电池仓、充配电柜等机械设备、电气设备进行检查"], ans:["在操作中，可以佩戴戒指、手表、钥匙环等金属物品，并做好安全防护工作"]},
+{id:4, q:"发生电池热失控后，向119报警时，需要包含哪些内容？", type:"multiple", opts:["起火的地址","个人电话","起火材质","起火电池数量","站内电池总量","是否有人员被困","应急人员已到位"], ans:["起火的地址","个人电话","起火材质","起火电池数量","站内电池总量","是否有人员被困"]},
+{id:5, q:"如果发生了违规事件，可能会受到哪些处罚", type:"multiple", opts:["违规了不会有任何处罚","合作方和派驻人员向CAES支付违约金","若损失超过违约金数额的，合作方与派驻人员还应当就超出部分的损失承担连带的损害赔偿责任","需要支付CAES因调查违约行为而支付的合理费用"], ans:["合作方和派驻人员向CAES支付违约金","若损失超过违约金数额的，合作方与派驻人员还应当就超出部分的损失承担连带的损害赔偿责任","需要支付CAES因调查违约行为而支付的合理费用"]},
+{id:6, q:"遇到司机投诉，正确的做法是？", type:"multiple", opts:["倾听司机，并安抚司机情绪","用话术打发司机离开","引导司机400客服中心处理","涉及安全或风险舆论的，第一时间上报城市运维伙伴"], ans:["倾听司机，并安抚司机情绪","引导司机400客服中心处理","涉及安全或风险舆论的，第一时间上报城市运维伙伴"]},
+{id:7, q:"公司安全三禁止是指（）", type:"multiple", opts:["禁止进入设备未挂牌上锁，一处一人一锁","禁止屏蔽安全装置","禁止设备内外多人调机","禁止不佩戴防护用品"], ans:["禁止进入设备未挂牌上锁，一处一人一锁","禁止屏蔽安全装置","禁止设备内外多人调机"]},
+{id:8, q:"在操作HMI手动换电的满电包出仓环节中，选定仓位之后，仓位电推杆抬起下一步骤是什么？", type:"single", opts:["垛机行走轴到电池仓位","垛机升降轴到电池仓L","垛机货叉轴到电池仓位","垛机升降轴到电池仓H"], ans:["垛机行走轴到电池仓位"]},
+{id:9, q:"巧克力换电标准电池包尺寸", type:"single", opts:["长1600宽1300高125","长1600宽1400高120","长1600宽1300高120","长1500宽1300高120"], ans:["长1600宽1300高120"]},
+{id:10, q:"单次故障补偿金额有最高限制吗？", type:"single", opts:["没有限制","没有限制，按照司机故障时长进行赔偿","有限制，每单最高可赔偿为300元的等值优惠券","有限制，每单最高可赔偿为240元的等值优惠券"], ans:["有限制，每单最高可赔偿为240元的等值优惠券"]},
+{id:11, q:"在操作HMI手动换电的拆包环节中，亏电电池包已经拆卸下来到锁枪轴到拆包松仓位下一步骤是什么？", type:"single", opts:["归中轴到车辆回退位","车辆举升到检测位","剪叉升降轴到拆装检测位","剪叉升降轴到平移接驳位"], ans:["归中轴到车辆回退位"]},
+{id:12, q:"在操作HMI手动换电的装包环节中，在剪叉升降轴到车辆接触位的上一步骤是什么？", type:"single", opts:["剪叉升降轴到平移接驳位","锁枪升降轴到工作位","车辆举升到托平位","剪叉升降轴到车辆托平位"], ans:["剪叉升降轴到平移接驳位"]},
+{id:13, q:"标准电池包的常温充电时间(30-80%SOC)", type:"single", opts:["40分钟","30分钟","20分钟","24分钟"], ans:["24分钟"]},
+{id:14, q:"消防转移测试前，要检查哪些（）", type:"multiple", opts:["消防转移通道上是否异物","消防转移通道上对射光电是否歪斜","安全门是否关闭"], ans:["消防转移通道上是否异物","消防转移通道上对射光电是否歪斜","安全门是否关闭"]},
+{id:15, q:"下列属于电击伤害的有？", type:"multiple", opts:["单相触电","双相触电","电弧烧伤","电烙印"], ans:["电弧烧伤","电烙印"]},
+{id:16, q:"故障处理结束之后，要主动和司机交代的事情有？", type:"multiple", opts:["故障开始的时间","故障结束的时间","赔偿优惠券3个工作日会到司机账户","可以获得赔偿的金额"], ans:["故障开始的时间","故障结束的时间","赔偿优惠券3个工作日会到司机账户"]},
+{id:17, q:"在操作HMI手动换电的亏电包入仓环节中，首先缓存平移到等待位给消防平移挪位置，再消防平移到车底位", type:"single", opts:["正确","错误"], ans:["正确"]},
+{id:18, q:"在HMI手动换电时，缓存平移可以到消防位", type:"single", opts:["正确","错误"], ans:["错误"]},
+{id:19, q:"换电站内某个仓位频繁绝缘或者过流报警，则该仓位可能存在问题", type:"single", opts:["正确","错误"], ans:["正确"]},
+{id:20, q:"巧克力换电所有标准电池包的热管理方式", type:"single", opts:["液冷液热","自然冷却+加热膜加热","直冷+加热膜加热","自然冷却+无加热"], ans:["自然冷却+加热膜加热"]},
+{id:21, q:"站务伙伴在处理故障过程中，司机询问了购买套餐的单价相关问题，站务如何处理？", type:"single", opts:["直接按照经验，给予司机相关解答","当场打电话给其他伙伴询问答案，再转告司机","引导司机前往APP中客服中心询问客服人员","直接回答不知道"], ans:["引导司机前往APP中客服中心询问客服人员"]},
+{id:22, q:"下列不是绝缘防护措施的是（）", type:"single", opts:["电线线缆的绝缘层","电线管及管件","工具的绝缘手柄","用电设备金属外壳接地"], ans:["用电设备金属外壳接地"]},
+{id:23, q:"根据事故致因理论，96%的事故原因是（）", type:"single", opts:["设备缺陷","环境缺陷","不安全的行为","投入不足"], ans:["不安全的行为"]},
+{id:24, q:"站控系统的半自动换电流程在哪个环节操作结束之后上传订单信息？", type:"single", opts:["亏电包入仓环节结束","满电包出仓环节结束","装包环节结束","设备复位环节结束"], ans:["装包环节结束"]},
+{id:25, q:"以下哪些情况会导致机械伤害事故的发生？", type:"multiple", opts:["多人操作一台设备","执行挂牌上锁","屏蔽安全防护装置","佩戴劳动防护用品"], ans:["多人操作一台设备","屏蔽安全防护装置"]},
+{id:26, q:"在操作HMI手动换电的拆包环节中，亏电电池包已经拆卸下来后并检测，到剪叉升降轴到平移接驳位后需要设备到哪三个原点位？", type:"multiple", opts:["车辆举升到原点位","剪叉升降轴到原点位","锁枪升降轴到原点位","缓存升降到原点位"], ans:["车辆举升到原点位","剪叉升降轴到原点位","锁枪升降轴到原点位"]},
+{id:27, q:"进入设备内部，需要做哪些动作满足安全需求（）", type:"multiple", opts:["确认设备是否停止","完成挂牌上锁","禁止其他人操作设备","同伴确认双方的沟通方式"], ans:["确认设备是否停止","完成挂牌上锁","禁止其他人操作设备","同伴确认双方的沟通方式"]},
+{id:28, q:"因工作需要，需要将个人电脑接入换电站的网络并进行运维操作，以下哪些做法是正确的？", type:"multiple", opts:["直接将电脑通过网线接入到换电站网络","向接待人提出将个人设备接入到换电站网络的申请，获取同意后再接入","直接将换电站内部数据下载到个人电脑","从换电站系统下载数据前，必须先获得接待人的审批同意"], ans:["向接待人提出将个人设备接入到换电站网络的申请，获取同意后再接入","从换电站系统下载数据前，必须先获得接待人的审批同意"]},
+{id:29, q:"在HMI手动换电的拆包环节中，加解锁枪轴到拆包认帽位后，不需要断使能再上使能", type:"single", opts:["正确","错误"], ans:["错误"]},
+{id:30, q:"电池预报警的作用是", type:"multiple", opts:["主动识别电池异常","降低故障率","提升安全等级","保障资产安全"], ans:["主动识别电池异常","降低故障率","提升安全等级","保障资产安全"]},
+{id:31, q:"以下关于站务工作日常指导中关于接班时间正确的是", type:"single", opts:["提前15分钟","提前30分钟","提前45分钟","提前60分钟"], ans:["提前15分钟"]},
+{id:32, q:"巧克力换电标准电池包的设计寿命是多少", type:"single", opts:["8年80万","6年60万","5年50万","10年100万"], ans:["10年100万"]},
+{id:33, q:"四不伤害的内容", type:"multiple", opts:["不伤害自己","不伤害他人","保护别人不被伤害","保护自己不被别人伤害","保护家人不受伤害"], ans:["不伤害自己","不伤害他人","保护别人不被伤害","保护自己不被别人伤害"]},
+{id:34, q:"标准电池包的快换锁形式", type:"single", opts:["T型旋压式","卡扣式","普通螺栓式","球形螺栓式"], ans:["T型旋压式"]},
+{id:35, q:"巧克力换电站外部高压盒内零件包含", type:"multiple", opts:["MBMU","VBLE","SBMU","RDB"], ans:["MBMU","VBLE"]},
+{id:36, q:"以下哪个选项不需要在交接班检查", type:"single", opts:["是否遗留有上级领导安排的临时性工作","驱鼠药放置正常，药量充足","站端是否存在遗留未完成的工作","是否有需要及时追踪，记录的问题"], ans:["驱鼠药放置正常，药量充足"]},
+{id:37, q:"周检项安全装置检查只需要检查以下项目：非换电状态且设备均停止运动后，打开安全门后，检查是否可操作设备，所有安全门均要测试", type:"single", opts:["正确","错误"], ans:["错误"]},
+{id:38, q:"消防系统控制器功能检查，需查看消防控制器上的警示灯，哪个指示灯正常亮起，功能正常", type:"single", opts:["黄色","绿色","红色"], ans:["绿色"]},
+{id:39, q:"在操作手动换电前，检查首页的车型配方参数是否符合当前手动换电车型，如果不是，可在哪个页面找到对应的车型配方？", type:"single", opts:["电池管理","配方信息","系统功能","维护任务"], ans:["配方信息"]},
+{id:40, q:"发现有人触电，应立即", type:"single", opts:["设置警告牌或遮拦","切断电源，使人脱离带电体","未做防护，直接用手把人从带电体脱离","报警"], ans:["切断电源，使人脱离带电体"]}
+];
+
+let currentQuestions = [];
+let isSubmitting = false;
+let isSubmitted = false;
+const STORAGE_KEY = 'station_exam_v1_lock';
+
+function shuffle(array) {
+    let arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function checkDeviceStatus() {
+    const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    if (data && data.completed) {
+        document.getElementById('quizArea').style.display = 'none';
+        document.getElementById('statusMsg').style.display = 'block';
+        document.getElementById('adminResetBtn').style.display = 'inline-block';
+        document.getElementById('historyScore').innerHTML = '考生：' + (data.name || '未知') + ' | 历史得分：<span style="color:#166534;">' + data.score + '/100</span>';
+        document.getElementById('lockTitle').textContent = data.method === '自动' ? '🚨 切屏已自动交卷' : '⛔ 考试机会已使用';
+        document.getElementById('lockDesc').textContent = '试卷已锁定。如需重新考试，请由管理员输入密码解锁。';
+        return true;
+    }
+    return false;
+}
+
+function initQuiz() {
+    const container = document.getElementById('questionsContainer');
+    container.innerHTML = '';
+    document.getElementById('resultBox').style.display = 'none';
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('submitBtn').textContent = '提交试卷';
+    document.getElementById('userName').value = '';
+
+    const picked = shuffle(rawBank).slice(0, 25);
+    currentQuestions = picked.map((q, index) => ({
+        ...q,
+        index: index + 1,
+        shuffledOpts: shuffle(q.opts),
+        inputType: q.type === 'single' ? 'radio' : 'checkbox'
+    }));
+
+    const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+    currentQuestions.forEach(q => {
+        const block = document.createElement('div');
+        block.className = 'q-block';
+        let optionsHtml = '';
+        q.shuffledOpts.forEach((opt, i) => {
+            optionsHtml += '<label id="lbl-' + q.id + '-' + i + '"><input type="' + q.inputType + '" name="q' + q.id + '" value="' + opt + '"><span>' + letters[i] + '. ' + opt + '</span></label>';
+        });
+        block.innerHTML = '<div class="q-header"><span class="q-type">' + (q.type === 'single' ? '单选题' : '多选题') + '</span><span class="q-text">' + q.index + '. ' + q.q + '</span></div><div class="options">' + optionsHtml + '</div><div class="q-result" id="res-' + q.id + '"></div>';
+        container.appendChild(block);
+    });
+}
+
+function setupAntiCheat() {
+    const triggerAutoSubmit = () => {
+        if (!isSubmitted && !isSubmitting) {
+            console.log('⚠️ 检测到切屏或后台切换，触发自动交卷');
+            submitQuiz(true);
+        }
+    };
+    document.addEventListener('visibilitychange', () => { if (document.hidden) triggerAutoSubmit(); });
+    window.addEventListener('pagehide', triggerAutoSubmit);
+}
+
+function adminUnlock() {
+    const pwd = prompt('🔐 请输入管理员密码以解锁重考：');
+    if (pwd === ADMIN_PASSWORD) {
+        localStorage.removeItem(STORAGE_KEY);
+        isSubmitted = false;
+        isSubmitting = false;
+        document.getElementById('adminResetBtn').style.display = 'none';
+        document.getElementById('statusMsg').style.display = 'none';
+        document.getElementById('quizArea').style.display = 'block';
+        initQuiz();
+        alert('✅ 密码验证成功，已清除本地锁定并重新生成试卷！');
+    } else if (pwd !== null) {
+        alert('❌ 密码错误，权限拒绝！');
+    }
+}
+
+async function submitQuiz(isAuto = false) {
+    if (isSubmitted || isSubmitting) return;
+    isSubmitting = true;
+
+    const nameInput = document.getElementById('userName');
+    let name = nameInput.value.trim();
+    if (!name) name = isAuto ? '未填写(切屏自动提交)' : '未填写';
+
+    if (!isAuto) {
+        if (!confirm('确定提交试卷吗？提交后将无法修改。')) {
+            isSubmitting = false;
+            return;
+        }
+    }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = isAuto ? '切屏自动提交中...' : '提交中...';
+
+    let score = 0;
+    const wrongDetails = [];
+    const resultBox = document.getElementById('resultBox');
+
+    currentQuestions.forEach(q => {
+        const inputs = document.querySelectorAll('input[name="q' + q.id + '"]:checked');
+        const userAns = Array.from(inputs).map(i => i.value).sort();
+        const correctAns = [...q.ans].sort();
+        const isCorrect = JSON.stringify(userAns) === JSON.stringify(correctAns);
+
+        if (isCorrect) score += 4;
+        else wrongDetails.push('第' + q.index + '题：' + q.q.substring(0,20) + '... (你的答案: ' + (userAns.join('、') || '未答') + ')');
+
+        const resDiv = document.getElementById('res-' + q.id);
+        resDiv.innerHTML = isCorrect 
+            ? '<span style="color:#166534;font-weight:bold;">✔ 回答正确 (+4分)</span>'
+            : '<span style="color:#dc2626;font-weight:bold;">✖ 回答错误</span> | 正确答案：<span style="color:#166534;font-weight:bold;">' + q.ans.join('、') + '</span>';
+
+        q.shuffledOpts.forEach((opt, i) => {
+            const lbl = document.getElementById('lbl-' + q.id + '-' + i);
+            const isChecked = userAns.includes(opt);
+            const isActuallyCorrect = q.ans.includes(opt);
+            if (isActuallyCorrect) lbl.classList.add('opt-correct');
+            if (isChecked && !isActuallyCorrect) lbl.classList.add('opt-wrong');
+            lbl.querySelector('input').disabled = true;
+        });
+    });
+
+    const record = { completed: true, name: name, score: score, time: new Date().toLocaleString('zh-CN'), method: isAuto ? '自动' : '手动' };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(record));
+
+    try {
+        const payload = {
+            姓名: name,
+            得分: score + '/100',
+            提交时间: record.time,
+            提交方式: record.method,
+            错题记录: wrongDetails.length ? wrongDetails.join(' | ') : '全部正确'
+        };
+
+        await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload),
+            headers: { 'Content-Type': 'text/plain' }
+        });
+    } catch (err) {
+        console.warn('⚠️ 云端成绩同步失败，但本地考试已锁定');
+    }
+
+    isSubmitted = true;
+    resultBox.style.display = 'block';
+    resultBox.style.background = isAuto ? '#fef3c7' : '#dcfce7';
+    resultBox.style.color = isAuto ? '#92400e' : '#166534';
+    const tip = isAuto ? '🚨 检测到切屏，已自动交卷' : '✅ 提交成功';
+    resultBox.innerHTML = tip + '<br>考生：' + name + ' | 得分：<span style="font-size:24px;">' + score + ' / 100</span> 分';
+    btn.textContent = '已提交';
+    document.getElementById('adminResetBtn').style.display = 'inline-block';
+    resultBox.scrollIntoView({ behavior: 'smooth' });
+}
+
+window.onload = function() {
+    if (!checkDeviceStatus()) {
+        initQuiz();
+        setupAntiCheat();
+    }
+};
+</script>
+</body>
+</html>
