@@ -2,76 +2,82 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>站务月检月考</title>
 <style>
 :root { --primary: #2563eb; --success: #16a34a; --danger: #dc2626; --warn: #f59e0b; --bg: #f3f4f6; --card: #ffffff; --text: #1f2937; --text-light: #6b7280; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.6; }
-.container { max-width: 900px; margin: 0 auto; background: var(--card); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-h1 { text-align: center; color: var(--text); margin-bottom: 5px; }
-.subtitle { text-align: center; color: var(--text-light); margin-bottom: 25px; font-size: 14px; }
+.container { max-width: 900px; margin: 0 auto; background: var(--card); padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+h1 { text-align: center; color: var(--text); margin: 0 0 5px; font-size: 24px; }
+.subtitle { text-align: center; color: var(--text-light); margin-bottom: 20px; font-size: 13px; }
 .info-section { background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
-.info-section label { font-weight: 600; display: block; margin-bottom: 5px; }
-.info-section input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 15px; box-sizing: border-box; }
-.info-section input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-.q-block { padding: 15px; margin-bottom: 20px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fafafa; }
+.info-section label { font-weight: 600; display: block; margin-bottom: 6px; font-size: 14px; }
+.info-section input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 15px; }
+.info-section input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+.q-block { padding: 14px; margin-bottom: 16px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fafafa; }
 .q-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-.q-type { background: var(--primary); color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
-.q-text { font-weight: 600; font-size: 15px; }
-.options label { display: flex; align-items: flex-start; padding: 8px 10px; margin: 6px 0; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
-.options label:hover { background: #eef2ff; }
-.options input { margin-right: 10px; margin-top: 4px; }
-.btn-group { text-align: center; margin-top: 30px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
-button { padding: 12px 28px; font-size: 16px; cursor: pointer; border: none; border-radius: 8px; font-weight: 500; transition: all 0.2s; }
+.q-type { background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+.q-text { font-weight: 600; font-size: 14.5px; }
+.options { display: grid; gap: 6px; }
+.options label { 
+    display: flex; align-items: flex-start; padding: 9px 10px; border-radius: 6px; cursor: pointer; 
+    background: #fff; border: 1px solid #f0f0f0; transition: background 0.12s ease, transform 0.1s ease;
+    touch-action: manipulation; user-select: none; position: relative;
+}
+.options label:hover { background: #f0f5ff; }
+.options label:active { background: #dbeafe; transform: scale(0.99); } /* 即时点击反馈 */
+.options input { margin-right: 10px; margin-top: 3px; pointer-events: none; accent-color: var(--primary); } /* 交由label代理点击，提升响应 */
+.btn-group { text-align: center; margin-top: 25px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+button { padding: 12px 24px; font-size: 15px; cursor: pointer; border: none; border-radius: 8px; font-weight: 500; transition: all 0.2s; }
 .btn-submit { background: var(--success); color: white; }
-.btn-submit:hover { background: #15803d; }
-.btn-submit:disabled { background: #9ca3af; cursor: not-allowed; }
-.btn-admin { background: var(--warn); color: white; display: none; margin: 15px auto 0; }
-.btn-admin:hover { background: #d97706; }
-.result-box { margin-top: 25px; padding: 20px; border-radius: 8px; text-align: center; font-size: 18px; font-weight: bold; display: none; animation: fadeIn 0.5s; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.btn-submit:hover:not(:disabled) { background: #15803d; transform: translateY(-1px); }
+.btn-submit:disabled { background: #9ca3af; cursor: not-allowed; opacity: 0.8; }
+.btn-admin { background: var(--warn); color: white; display: none; margin: 15px auto 0; font-size: 13px; padding: 10px 18px; }
+.result-box { margin-top: 20px; padding: 18px; border-radius: 8px; text-align: center; font-size: 17px; font-weight: bold; display: none; animation: fadeIn 0.4s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .opt-correct { background: #dcfce7 !important; border-left: 3px solid var(--success); }
 .opt-wrong { background: #fee2e2 !important; border-left: 3px solid var(--danger); }
-.q-result { font-size: 13px; margin-top: 8px; color: var(--text-light); }
-.q-result span { color: var(--success); font-weight: bold; }
-#statusMsg { display: none; text-align: center; padding: 40px 20px; background: #f8fafc; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
-#statusMsg h2 { color: var(--danger); margin: 0 0 10px; }
-#statusMsg p { color: var(--text-light); margin: 5px 0; }
-#historyScore { font-size: 18px; font-weight: bold; margin-top: 15px !important; }
+.q-result { font-size: 12px; margin-top: 8px; color: var(--text-light); }
+.q-result span { font-weight: 600; }
+#statusMsg { display: none; text-align: center; padding: 30px 20px; background: #f8fafc; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+#statusMsg h2 { color: var(--danger); margin: 0 0 10px; font-size: 20px; }
+#statusMsg p { color: var(--text-light); margin: 6px 0; font-size: 14px; }
+#historyScore { font-size: 15px; font-weight: 600; margin-top: 12px !important; }
 </style>
 </head>
 <body>
 <div class="container">
-    <h1>站务月检月考</h1>
-    <div class="subtitle">系统随机抽取 25 题，每题 4 分，满分 100 分。选项顺序已随机打乱。</div>
-    
-    <div id="statusMsg">
-        <h2 id="lockTitle">⛔ 考试机会已使用</h2>
-        <p id="lockDesc">本设备仅支持一次考试，刷新/重新进入无法重置。</p>
-        <p id="historyScore"></p>
-        <button type="button" class="btn-admin" id="adminResetBtn" onclick="adminUnlock()">🔐 管理员密码解锁重考</button>
-    </div>
+  <h1>站务月检月考</h1>
+  <div class="subtitle">系统随机抽取 25 题，每题 4 分，满分 100 分。选项顺序已随机打乱。</div>
+  
+  <div id="statusMsg">
+    <h2 id="lockTitle">⛔ 考试机会已使用</h2>
+    <p id="lockDesc">本设备仅支持一次考试，刷新/重新进入无法重置。</p>
+    <p id="historyScore"></p>
+    <button type="button" class="btn-admin" id="adminResetBtn" onclick="adminUnlock()">🔐 管理员密码解锁重考</button>
+  </div>
 
-    <div id="quizArea">
-        <form id="quizForm" onsubmit="return false;">
-            <div class="info-section">
-                <label for="userName">👤 考生姓名：</label>
-                <input type="text" id="userName" placeholder="请输入您的真实姓名（提交后不可修改）" required>
-            </div>
-            <div id="questionsContainer"></div>
-            <div class="btn-group">
-                <button type="button" class="btn-submit" id="submitBtn" onclick="submitQuiz()">提交试卷</button>
-            </div>
-        </form>
-        <div id="resultBox" class="result-box"></div>
-    </div>
+  <div id="quizArea">
+    <form id="quizForm" onsubmit="return false;">
+      <div class="info-section">
+        <label for="userName">👤 考生姓名：</label>
+        <input type="text" id="userName" placeholder="请输入您的真实姓名（提交后不可修改）" required autocomplete="off">
+      </div>
+      <div id="questionsContainer"></div>
+      <div class="btn-group">
+        <button type="button" class="btn-submit" id="submitBtn" onclick="submitQuiz()">提交试卷</button>
+      </div>
+    </form>
+    <div id="resultBox" class="result-box"></div>
+  </div>
 </div>
 
 <script>
 const ADMIN_PASSWORD = 'caes2026';
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx2EUbrP9BtkLDmES-fnxS8AtbUzE_8Di4MROK36RkweOwyHkpffcgqc4SF7p0eDLr67Q/exec';
 
-// 📚 题库数据 (46题完整版，含新增6题)
+// 📚 题库数据 (46题完整版)
 const rawBank = [
 {id:1, q:"车机下高压执行失败，界面报错车机下高压超时，可尝试在界面换电管理到换电流程监控，点击按钮重新下发下高压指令", type:"single", opts:["正确","错误"], ans:["正确"]},
 {id:2, q:"锂离子电池灭火最好的方法是（）", type:"single", opts:["用水灭火","用干粉灭火器","用二氧化碳灭火器"], ans:["用水灭火"]},
@@ -113,7 +119,6 @@ const rawBank = [
 {id:38, q:"消防系统控制器功能检查，需查看消防控制器上的警示灯，哪个指示灯正常亮起，功能正常", type:"single", opts:["黄色","绿色","红色"], ans:["绿色"]},
 {id:39, q:"在操作手动换电前，检查首页的车型配方参数是否符合当前手动换电车型，如果不是，可在哪个页面找到对应的车型配方？", type:"single", opts:["电池管理","配方信息","系统功能","维护任务"], ans:["配方信息"]},
 {id:40, q:"发现有人触电，应立即", type:"single", opts:["设置警告牌或遮拦","切断电源，使人脱离带电体","未做防护，直接用手把人从带电体脱离","报警"], ans:["切断电源，使人脱离带电体"]},
-// 🆕 新增题目 (41-46)
 {id:41, q:"换电站一共有几个替罪羊，几个插入点？", type:"single", opts:["3;4","4;3","5;4","6;5"], ans:["3;4"]},
 {id:42, q:"3.0换电站的上下电顺序与3.2换电站上下电的顺序一致？", type:"single", opts:["正确","错误"], ans:["错误"]},
 {id:43, q:"3.0换电站断电时第一步要做什么？", type:"single", opts:["断控制回路","断2FC1塑壳开关俗称大闸","站控发送工控机关机指令","先断刻录机"], ans:["站控发送关机指令"]},
@@ -128,168 +133,157 @@ let isSubmitted = false;
 const STORAGE_KEY = 'station_exam_v1_lock';
 
 function shuffle(array) {
-    let arr = [...array];
-    for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
+  let arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
 }
 
 function checkDeviceStatus() {
-    const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-    if (data && data.completed) {
-        document.getElementById('quizArea').style.display = 'none';
-        document.getElementById('statusMsg').style.display = 'block';
-        document.getElementById('adminResetBtn').style.display = 'inline-block';
-        document.getElementById('historyScore').innerHTML = '考生：' + (data.name || '未知') + ' | 历史得分：<span style="color:#166534;">' + data.score + '/100</span>';
-        document.getElementById('lockTitle').textContent = data.method === '自动' ? '🚨 切屏已自动交卷' : '⛔ 考试机会已使用';
-        document.getElementById('lockDesc').textContent = '试卷已锁定。如需重新考试，请由管理员输入密码解锁。';
-        return true;
-    }
-    return false;
+  const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+  if (data && data.completed) {
+    document.getElementById('quizArea').style.display = 'none';
+    const statusMsg = document.getElementById('statusMsg');
+    statusMsg.style.display = 'block';
+    document.getElementById('adminResetBtn').style.display = 'inline-block';
+    document.getElementById('historyScore').innerHTML = `考生：${data.name || '未知'} | 历史得分：<span style="color:#166534;">${data.score}/100</span>`;
+    document.getElementById('lockTitle').textContent = data.method === '自动' ? '🚨 切屏已自动交卷' : '⛔ 考试机会已使用';
+    document.getElementById('lockDesc').textContent = '试卷已锁定。如需重新考试，请由管理员输入密码解锁。';
+    return true;
+  }
+  return false;
 }
 
 function initQuiz() {
-    const container = document.getElementById('questionsContainer');
-    container.innerHTML = '';
-    document.getElementById('resultBox').style.display = 'none';
-    document.getElementById('submitBtn').disabled = false;
-    document.getElementById('submitBtn').textContent = '提交试卷';
-    document.getElementById('userName').value = '';
+  const container = document.getElementById('questionsContainer');
+  document.getElementById('resultBox').style.display = 'none';
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = false; btn.textContent = '提交试卷';
+  document.getElementById('userName').value = '';
 
-    const picked = shuffle(rawBank).slice(0, 25);
-    currentQuestions = picked.map((q, index) => ({
-        ...q,
-        index: index + 1,
-        shuffledOpts: shuffle(q.opts),
-        inputType: q.type === 'single' ? 'radio' : 'checkbox'
-    }));
+  const picked = shuffle(rawBank).slice(0, 25);
+  currentQuestions = picked.map((q, index) => ({
+    ...q,
+    index: index + 1,
+    shuffledOpts: shuffle(q.opts),
+    inputType: q.type === 'single' ? 'radio' : 'checkbox'
+  }));
 
-    const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
-    currentQuestions.forEach(q => {
-        const block = document.createElement('div');
-        block.className = 'q-block';
-        let optionsHtml = '';
-        q.shuffledOpts.forEach((opt, i) => {
-            optionsHtml += '<label id="lbl-' + q.id + '-' + i + '"><input type="' + q.inputType + '" name="q' + q.id + '" value="' + opt + '"><span>' + letters[i] + '. ' + opt + '</span></label>';
-        });
-        block.innerHTML = '<div class="q-header"><span class="q-type">' + (q.type === 'single' ? '单选题' : '多选题') + '</span><span class="q-text">' + q.index + '. ' + q.q + '</span></div><div class="options">' + optionsHtml + '</div><div class="q-result" id="res-' + q.id + '"></div>';
-        container.appendChild(block);
-    });
+  const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+  // 🚀 优化：使用字符串模板一次性生成DOM，避免循环appendChild导致的多次重排
+  let html = '';
+  currentQuestions.forEach(q => {
+    let optsHtml = q.shuffledOpts.map((opt, i) => 
+      `<label id="lbl-${q.id}-${i}"><input type="${q.inputType}" name="q${q.id}" value="${opt}"><span>${letters[i]}. ${opt}</span></label>`
+    ).join('');
+    html += `<div class="q-block"><div class="q-header"><span class="q-type">${q.type === 'single' ? '单选题' : '多选题'}</span><span class="q-text">${q.index}. ${q.q}</span></div><div class="options">${optsHtml}</div><div class="q-result" id="res-${q.id}"></div></div>`;
+  });
+  container.innerHTML = html;
 }
 
 function setupAntiCheat() {
-    const triggerAutoSubmit = () => {
-        if (!isSubmitted && !isSubmitting) {
-            console.log('⚠️ 检测到切屏或后台切换，触发自动交卷');
-            submitQuiz(true);
-        }
-    };
-    document.addEventListener('visibilitychange', () => { if (document.hidden) triggerAutoSubmit(); });
-    window.addEventListener('pagehide', triggerAutoSubmit);
+  const triggerAutoSubmit = () => {
+    if (!isSubmitted && !isSubmitting) {
+      console.log('⚠️ 检测到切屏或后台切换，触发自动交卷');
+      submitQuiz(true);
+    }
+  };
+  document.addEventListener('visibilitychange', () => { if (document.hidden) triggerAutoSubmit(); });
+  window.addEventListener('pagehide', triggerAutoSubmit);
 }
 
 function adminUnlock() {
-    const pwd = prompt('🔐 请输入管理员密码以解锁重考：');
-    if (pwd === ADMIN_PASSWORD) {
-        localStorage.removeItem(STORAGE_KEY);
-        isSubmitted = false;
-        isSubmitting = false;
-        document.getElementById('adminResetBtn').style.display = 'none';
-        document.getElementById('statusMsg').style.display = 'none';
-        document.getElementById('quizArea').style.display = 'block';
-        initQuiz();
-        alert('✅ 密码验证成功，已清除本地锁定并重新生成试卷！');
-    } else if (pwd !== null) {
-        alert('❌ 密码错误，权限拒绝！');
-    }
+  const pwd = prompt('🔐 请输入管理员密码以解锁重考：');
+  if (pwd === ADMIN_PASSWORD) {
+    localStorage.removeItem(STORAGE_KEY);
+    isSubmitted = false; isSubmitting = false;
+    document.getElementById('adminResetBtn').style.display = 'none';
+    document.getElementById('statusMsg').style.display = 'none';
+    document.getElementById('quizArea').style.display = 'block';
+    initQuiz();
+    alert('✅ 密码验证成功，已清除本地锁定并重新生成试卷！');
+  } else if (pwd !== null) {
+    alert('❌ 密码错误，权限拒绝！');
+  }
 }
 
 async function submitQuiz(isAuto = false) {
-    if (isSubmitted || isSubmitting) return;
-    isSubmitting = true;
+  if (isSubmitted || isSubmitting) return;
+  isSubmitting = true;
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.style.pointerEvents = 'none';
+  btn.textContent = isAuto ? '切屏自动提交中...' : '提交中...';
 
-    const nameInput = document.getElementById('userName');
-    let name = nameInput.value.trim();
-    if (!name) name = isAuto ? '未填写(切屏自动提交)' : '未填写';
+  const nameInput = document.getElementById('userName');
+  let name = nameInput.value.trim() || (isAuto ? '未填写(切屏自动提交)' : '未填写');
 
-    if (!isAuto) {
-        if (!confirm('确定提交试卷吗？提交后将无法修改。')) {
-            isSubmitting = false;
-            return;
-        }
+  if (!isAuto) {
+    if (!confirm('确定提交试卷吗？提交后将无法修改。')) {
+      isSubmitting = false;
+      btn.disabled = false; btn.style.pointerEvents = 'auto'; btn.textContent = '提交试卷';
+      return;
     }
+  }
 
-    const btn = document.getElementById('submitBtn');
-    btn.disabled = true;
-    btn.textContent = isAuto ? '切屏自动提交中...' : '提交中...';
+  let score = 0;
+  const wrongDetails = [];
+  const resultBox = document.getElementById('resultBox');
 
-    let score = 0;
-    const wrongDetails = [];
-    const resultBox = document.getElementById('resultBox');
-
+  // 🚀 优化：将繁重的DOM操作放入 rAF，避免阻塞主线程渲染，提升视觉流畅度
+  requestAnimationFrame(() => {
     currentQuestions.forEach(q => {
-        const inputs = document.querySelectorAll('input[name="q' + q.id + '"]:checked');
-        const userAns = Array.from(inputs).map(i => i.value).sort();
-        const correctAns = [...q.ans].sort();
-        const isCorrect = JSON.stringify(userAns) === JSON.stringify(correctAns);
+      const inputs = document.querySelectorAll(`input[name="q${q.id}"]:checked`);
+      const userAns = Array.from(inputs).map(i => i.value).sort();
+      const correctAns = [...q.ans].sort();
+      const isCorrect = JSON.stringify(userAns) === JSON.stringify(correctAns);
 
-        if (isCorrect) score += 4;
-        else wrongDetails.push('第' + q.index + '题：' + q.q.substring(0,20) + '... (你的答案: ' + (userAns.join('、') || '未答') + ')');
+      if (isCorrect) score += 4;
+      else wrongDetails.push(`第${q.index}题：${q.q.substring(0, 20)}... (你的答案: ${userAns.join('、') || '未答'})`);
 
-        const resDiv = document.getElementById('res-' + q.id);
-        resDiv.innerHTML = isCorrect 
-            ? '<span style="color:#166534;font-weight:bold;">✔ 回答正确 (+4分)</span>'
-            : '<span style="color:#dc2626;font-weight:bold;">✖ 回答错误</span> | 正确答案：<span style="color:#166534;font-weight:bold;">' + q.ans.join('、') + '</span>';
+      const resDiv = document.getElementById(`res-${q.id}`);
+      resDiv.innerHTML = isCorrect
+        ? '<span style="color:#166534;">✔ 回答正确 (+4分)</span>'
+        : `<span style="color:#dc2626;">✖ 回答错误</span> | 正确答案：<span style="color:#166534;">${q.ans.join('、')}</span>`;
 
-        q.shuffledOpts.forEach((opt, i) => {
-            const lbl = document.getElementById('lbl-' + q.id + '-' + i);
-            const isChecked = userAns.includes(opt);
-            const isActuallyCorrect = q.ans.includes(opt);
-            if (isActuallyCorrect) lbl.classList.add('opt-correct');
-            if (isChecked && !isActuallyCorrect) lbl.classList.add('opt-wrong');
-            lbl.querySelector('input').disabled = true;
-        });
+      q.shuffledOpts.forEach((opt, i) => {
+        const lbl = document.getElementById(`lbl-${q.id}-${i}`);
+        const isChecked = userAns.includes(opt);
+        const isActuallyCorrect = q.ans.includes(opt);
+        if (isActuallyCorrect) lbl.classList.add('opt-correct');
+        if (isChecked && !isActuallyCorrect) lbl.classList.add('opt-wrong');
+        lbl.querySelector('input').disabled = true;
+      });
     });
 
-    const record = { completed: true, name: name, score: score, time: new Date().toLocaleString('zh-CN'), method: isAuto ? '自动' : '手动' };
+    const record = { completed: true, name, score, time: new Date().toLocaleString('zh-CN'), method: isAuto ? '自动' : '手动' };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(record));
 
-    try {
-        const payload = {
-            姓名: name,
-            得分: score + '/100',
-            提交时间: record.time,
-            提交方式: record.method,
-            错题记录: wrongDetails.length ? wrongDetails.join(' | ') : '全部正确'
-        };
+    // 异步同步云端，不阻塞UI
+    fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ 姓名: name, 得分: score + '/100', 提交时间: record.time, 提交方式: record.method, 错题记录: wrongDetails.length ? wrongDetails.join(' | ') : '全部正确' }),
+      headers: { 'Content-Type': 'text/plain' }
+    }).catch(() => console.warn('⚠️ 云端成绩同步失败，但本地考试已锁定'));
 
-        await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify(payload),
-            headers: { 'Content-Type': 'text/plain' }
-        });
-    } catch (err) {
-        console.warn('⚠️ 云端成绩同步失败，但本地考试已锁定');
-    }
-
-    isSubmitted = true;
+    // 更新结果UI
     resultBox.style.display = 'block';
     resultBox.style.background = isAuto ? '#fef3c7' : '#dcfce7';
     resultBox.style.color = isAuto ? '#92400e' : '#166534';
-    const tip = isAuto ? '🚨 检测到切屏，已自动交卷' : '✅ 提交成功';
-    resultBox.innerHTML = tip + '<br>考生：' + name + ' | 得分：<span style="font-size:24px;">' + score + ' / 100</span> 分';
+    resultBox.innerHTML = `${isAuto ? '🚨 检测到切屏，已自动交卷' : '✅ 提交成功'}<br>考生：${name} | 得分：<span style="font-size:24px;">${score} / 100</span> 分`;
     btn.textContent = '已提交';
     document.getElementById('adminResetBtn').style.display = 'inline-block';
     resultBox.scrollIntoView({ behavior: 'smooth' });
+    isSubmitted = true;
+  });
 }
 
 window.onload = function() {
-    if (!checkDeviceStatus()) {
-        initQuiz();
-        setupAntiCheat();
-    }
+  if (!checkDeviceStatus()) {
+    initQuiz();
+    setupAntiCheat();
+  }
 };
 </script>
 </body>
