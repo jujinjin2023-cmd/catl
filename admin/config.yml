@@ -1,1 +1,18 @@
+backend:
+  name: github
+  repo: jujinjin2023-CMD/catl
+  branch: main
+  client_id: Ov23li98eWR7qp5BNsQ1  # ← 必须填真实的 Client ID
 
+media_folder: "images/uploads"
+public_folder: "/images/uploads"
+
+collections:
+  - name: "reports"
+    label: "工作周报"
+    folder: "_reports"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - {label: "标题", name: "title", widget: "string"}
+      - {label: "内容", name: "body", widget: "markdown"}
