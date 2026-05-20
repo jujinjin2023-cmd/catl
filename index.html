@@ -2,76 +2,374 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的工作周报</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>运维周报 · 简报</title>
+    <!-- marked.js 解析 Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Microsoft YaHei', Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+            background: #f1f5f9;
+            font-family: system-ui, -apple-system, 'Segoe UI', 'Roboto', 'Noto Sans', sans-serif;
+            padding: 2rem 1rem;
+            color: #0f172a;
         }
+
+        /* 主容器 */
         .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 880px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 32px;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            transition: all 0.2s ease;
         }
+
+        /* 头部区域 */
+        .page-header {
+            padding: 2rem 2rem 0.5rem 2rem;
+            border-bottom: 1px solid #e9eef3;
+        }
+
         h1 {
-            color: #333;
-            border-bottom: 3px solid #4CAF50;
-            padding-bottom: 10px;
+            font-size: 1.9rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #1e293b, #2d3a4f);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
         }
-        .week-report {
-            margin: 20px 0;
-            padding: 20px;
-            background: #fafafa;
-            border-left: 4px solid #4CAF50;
-            border-radius: 5px;
+
+        h1::before {
+            content: "📋";
+            font-size: 1.8rem;
+            background: none;
+            -webkit-background-clip: unset;
+            color: #2c6e9e;
         }
-        .date {
-            color: #666;
-            font-size: 14px;
+
+        .sub {
+            color: #5b6e8c;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            border-left: 3px solid #3b82f6;
+            padding-left: 12px;
+            margin-top: 12px;
         }
-        .content {
-            margin: 15px 0;
-            line-height: 1.8;
-        }
-        .image {
-            max-width: 100%;
-            height: auto;
-            margin: 10px 0;
-            border-radius: 5px;
-        }
-        /* 广告样式 */
-        .ad-container {
-            margin: 30px 0;
-            padding: 10px;
-            background: #fff;
-            border: 1px dashed #ddd;
+
+        /* 广告卡片 - 干净内敛 */
+        .ad-card {
+            margin: 1.5rem 2rem;
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
             text-align: center;
-            min-height: 250px;
+            font-size: 0.85rem;
+            color: #6c7a91;
+            transition: all 0.2s;
+        }
+
+        /* 周报列表区域 */
+        .reports-list {
+            padding: 0 2rem 2rem 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* 单篇周报卡片 */
+        .report-card {
+            background: #ffffff;
+            border-radius: 24px;
+            border: 1px solid #eef2f6;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+        }
+
+        .report-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 12px 22px -12px rgba(0, 0, 0, 0.1);
+        }
+
+        .report-header {
+            padding: 1.4rem 1.8rem 0.6rem 1.8rem;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .report-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #0c4e6e;
+            letter-spacing: -0.2px;
+            line-height: 1.3;
+        }
+
+        .report-date {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: #6c86a3;
+            background: #f1f5f9;
+            padding: 4px 12px;
+            border-radius: 40px;
+            margin-top: 12px;
+        }
+
+        .report-content {
+            padding: 1.6rem 1.8rem 2rem 1.8rem;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #1e2a3e;
+        }
+
+        /* Markdown 内容样式 */
+        .report-content h1,
+        .report-content h2,
+        .report-content h3 {
+            margin-top: 1.4em;
+            margin-bottom: 0.5em;
+            font-weight: 600;
+            color: #1e3a5f;
+        }
+
+        .report-content h2 {
+            font-size: 1.35rem;
+            border-left: 4px solid #3b82f6;
+            padding-left: 14px;
+        }
+
+        .report-content p {
+            margin: 0.8em 0;
+        }
+
+        .report-content ul, 
+        .report-content ol {
+            margin: 0.6em 0 0.6em 1.6em;
+        }
+
+        .report-content li {
+            margin: 0.4em 0;
+        }
+
+        .report-content img {
+            max-width: 100%;
+            border-radius: 16px;
+            margin: 1rem 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #eef2f6;
+        }
+
+        .report-content code {
+            background: #f1f5f9;
+            padding: 0.2rem 0.4rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #d4332e;
+        }
+
+        .report-content pre {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 16px;
+            overflow-x: auto;
+        }
+
+        /* 空状态与加载 */
+        .empty-state, .loading-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6c86a3;
+            background: #fafcff;
+            border-radius: 32px;
+        }
+
+        .loading-state {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .dot-pulse {
+            width: 8px;
+            height: 8px;
+            background: #3b82f6;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 1.2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: scale(0.8);}
+            50% { opacity: 1; transform: scale(1.2);}
+        }
+
+        /* 响应式 */
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem 0.8rem;
+            }
+            .container {
+                border-radius: 28px;
+            }
+            .page-header {
+                padding: 1.4rem 1.2rem 0rem 1.2rem;
+            }
+            .reports-list {
+                padding: 0 1rem 1.5rem 1rem;
+                gap: 1.5rem;
+            }
+            .report-header {
+                padding: 1rem 1.2rem 0.2rem 1.2rem;
+            }
+            .report-content {
+                padding: 1.2rem 1.2rem 1.6rem 1.2rem;
+            }
+            .report-title {
+                font-size: 1.3rem;
+            }
+            .ad-card {
+                margin: 1rem 1rem;
+            }
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            padding: 1.5rem;
+            color: #94a3b8;
+            border-top: 1px solid #eef2f6;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📊 运维周报</h1>
-        
-        <!-- 广告位 -->
-        <div class="ad-container">
-            <!-- 在这里粘贴广告代码 -->
-            <p style="color: #999;">广告位</p>
-        </div>
-
-        <!-- 周报内容 -->
-        <div id="reports"></div>
+<div class="container">
+    <div class="page-header">
+        <h1>运维周报</h1>
+        <div class="sub">记录·沉淀·成长</div>
     </div>
 
-    <script>
-        // 这里会自动加载周报内容
-        // 使用Decap CMS后，内容会自动更新
-    </script>
+    <!-- 广告位（干净占位，后续可换广告代码） -->
+    <div class="ad-card" id="adPlaceholder">
+        📢 广告位预留 · 可替换为 Google AdSense 或其他联盟广告
+    </div>
+
+    <!-- 周报动态列表 -->
+    <div class="reports-list" id="reportsContainer">
+        <div class="loading-state">
+            <span class="dot-pulse"></span> 正在加载周报...
+        </div>
+    </div>
+    <footer>📌 每周更新 · 自动同步自 GitHub</footer>
+</div>
+
+<script>
+    // 你的 GitHub 仓库配置 (已填好)
+    const GITHUB_USER = 'jujinjin2023-CMD';
+    const GITHUB_REPO = 'catl';
+    const REPORTS_FOLDER = '_reports';
+
+    const reportsContainer = document.getElementById('reportsContainer');
+
+    async function fetchAndRenderReports() {
+        reportsContainer.innerHTML = `<div class="loading-state"><span class="dot-pulse"></span> 正在加载周报...</div>`;
+        try {
+            // 获取 _reports 目录下的所有文件
+            const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${REPORTS_FOLDER}`;
+            const res = await fetch(apiUrl);
+            
+            if (!res.ok) {
+                if (res.status === 404) {
+                    reportsContainer.innerHTML = `<div class="empty-state">📭 还没有周报<br>请在仓库中创建 <code style="background:#eef2ff;padding:2px 8px;border-radius:12px;">_reports</code> 文件夹并放入 .md 文件</div>`;
+                    return;
+                }
+                throw new Error(`HTTP ${res.status}`);
+            }
+
+            const files = await res.json();
+            const mdFiles = files.filter(f => f.name.endsWith('.md'))
+                                 .sort((a, b) => b.name.localeCompare(a.name)); // 新文件在上方
+
+            if (mdFiles.length === 0) {
+                reportsContainer.innerHTML = `<div class="empty-state">✨ 第一篇周报正在路上<br>快去 <strong>_reports</strong> 文件夹创建 .md 文件吧</div>`;
+                return;
+            }
+
+            // 清空并渲染所有周报
+            reportsContainer.innerHTML = '';
+            for (const file of mdFiles) {
+                const fileRes = await fetch(file.download_url);
+                let rawMarkdown = await fileRes.text();
+
+                // 提取标题 (第一个 # 标题)
+                let title = '周报';
+                const titleMatch = rawMarkdown.match(/^#\s+(.+)/m);
+                if (titleMatch) title = titleMatch[1];
+
+                // 移除 front matter (如果存在)
+                let markdownBody = rawMarkdown;
+                if (rawMarkdown.trim().startsWith('---')) {
+                    const secondDash = rawMarkdown.indexOf('---', 3);
+                    if (secondDash !== -1) {
+                        markdownBody = rawMarkdown.substring(secondDash + 3).trim();
+                    }
+                }
+                
+                // 解析日期（从文件名获取 YYYY-MM-DD）
+                let displayDate = '未知日期';
+                const dateRegex = /(\d{4}-\d{2}-\d{2})/;
+                const match = file.name.match(dateRegex);
+                if (match) displayDate = match[1];
+
+                // 转换 markdown 为 html
+                let htmlContent = marked.parse(markdownBody);
+                
+                // 构建卡片
+                const card = document.createElement('article');
+                card.className = 'report-card';
+                card.innerHTML = `
+                    <div class="report-header">
+                        <div class="report-title">${escapeHtml(title)}</div>
+                        <div class="report-date">
+                            <span>📅</span> ${escapeHtml(displayDate)}
+                        </div>
+                    </div>
+                    <div class="report-content">
+                        ${htmlContent}
+                    </div>
+                `;
+                reportsContainer.appendChild(card);
+            }
+        } catch (err) {
+            console.error(err);
+            reportsContainer.innerHTML = `<div class="empty-state">⚠️ 加载失败: ${err.message}<br>请检查仓库是否为公开，且 _reports 文件夹存在</div>`;
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    fetchAndRenderReports();
+</script>
 </body>
 </html>
