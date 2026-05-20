@@ -1,12 +1,17 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>周报管理后台</title>
-    <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
-</head>
-<body>
-    <!-- Decap CMS 会自动注入管理界面 -->
-</body>
-</html>
+backend:
+  name: github
+  repo: jujinjin2023-CMD/卡特尔  # ️ 请确保与您的实际仓库名完全一致
+  branch: main
+
+media_folder: "images/uploads"
+public_folder: "/images/uploads"
+
+collections:
+  - name: "reports"
+    label: "工作周报"
+    folder: "_reports"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - {label: "标题", name: "title", widget: "string"}
+      - {label: "内容", name: "body", widget: "markdown"}
