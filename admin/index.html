@@ -4,9 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>工作周报管理后台</title>
-  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 </head>
 <body>
-  <!-- Decap CMS 会自动在这里注入管理界面 -->
+  <!-- ✅ 关键修改：显式添加这个容器，让 CMS 有地方挂载 -->
+  <div id="nc-root"></div>
+  
+  <!-- 引入 Decap CMS 脚本 -->
+  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 </body>
 </html>
