@@ -2,7 +2,7 @@ backend:
   name: github
   repo: jujinjin2023-CMD/catl
   branch: main
-  client_id:Ov23li98eWR7qp5BNsQ1# 下一步获取
+  client_id: Ov23li98eWR7qp5BNsQ1  # ← 必须填真实的 Client ID
 
 media_folder: "images/uploads"
 public_folder: "/images/uploads"
