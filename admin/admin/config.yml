@@ -1,7 +1,8 @@
 backend:
   name: github
-  repo: jujinjin2023-CMD/卡特尔  # ️ 请确保与您的实际仓库名完全一致
+  repo: jujinjin2023-CMD/catl
   branch: main
+  client_id: Ov23li98eWR7qp5BNsQ1  # 下一步获取
 
 media_folder: "images/uploads"
 public_folder: "/images/uploads"
