@@ -6,11 +6,7 @@
     <title>运维周报 · 简报</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #f1f5f9;
             font-family: system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif;
@@ -40,12 +36,7 @@
             align-items: center;
             gap: 10px;
         }
-        h1::before {
-            content: "📋";
-            font-size: 1.8rem;
-            background: none;
-            color: #2c6e9e;
-        }
+        h1::before { content: "📋"; font-size: 1.8rem; background: none; color: #2c6e9e; }
         .sub {
             color: #5b6e8c;
             font-size: 0.9rem;
@@ -89,7 +80,6 @@
             font-weight: 600;
             color: #0c4e6e;
             letter-spacing: -0.2px;
-            line-height: 1.3;
         }
         .report-date {
             display: inline-flex;
@@ -114,9 +104,7 @@
             padding-left: 14px;
             margin: 1em 0 0.5em;
         }
-        .report-content ul, .report-content ol {
-            margin: 0.6em 0 0.6em 1.6em;
-        }
+        .report-content ul, .report-content ol { margin: 0.6em 0 0.6em 1.6em; }
         .report-content img {
             max-width: 100%;
             border-radius: 16px;
@@ -128,12 +116,7 @@
             padding: 4rem 2rem;
             color: #6c86a3;
         }
-        .loading-state {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 12px;
-        }
+        .loading-state { display: flex; justify-content: center; align-items: center; gap: 12px; }
         .dot-pulse {
             width: 8px;
             height: 8px;
@@ -184,23 +167,31 @@
 
     const reportsContainer = document.getElementById('reportsContainer');
 
-    // 正确解码 GitHub API 返回的 base64 内容（支持中文）
+    // 正确解码 base64（支持中文）
     function decodeBase64(base64) {
-        // 将 base64 转换为二进制字符串
         const binaryString = atob(base64);
-        // 将二进制字符串转换为 Uint8Array
         const bytes = new Uint8Array(binaryString.length);
         for (let i = 0; i < binaryString.length; i++) {
             bytes[i] = binaryString.charCodeAt(i);
         }
-        // 使用 UTF-8 解码
         return new TextDecoder('utf-8').decode(bytes);
+    }
+
+    // 将 Markdown 中的 raw.githubusercontent.com 图片链接替换为 jsdelivr CDN
+    function rewriteImageUrls(markdown) {
+        // 匹配 ![]() 中的 raw.githubusercontent.com 链接
+        // 例如: https://raw.githubusercontent.com/jujinjin2023-CMD/catl/main/images/xxx.png
+        const regex = /!\[.*?\]\((https:\/\/raw\.githubusercontent\.com\/jujinjin2023-CMD\/catl\/main\/images\/[^\)]+)\)/g;
+        return markdown.replace(regex, (match, url) => {
+            // 转换为 jsdelivr 链接
+            const newUrl = url.replace(/https:\/\/raw\.githubusercontent\.com\/jujinjin2023-CMD\/catl\/main\//, 'https://cdn.jsdelivr.net/gh/jujinjin2023-CMD/catl@main/');
+            return match.replace(url, newUrl);
+        });
     }
 
     async function fetchAndRenderReports() {
         reportsContainer.innerHTML = `<div class="loading-state"><span class="dot-pulse"></span> 正在加载周报...</div>`;
         try {
-            // 获取 _reports 目录下的文件列表
             const listUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${REPORTS_FOLDER}`;
             const listRes = await fetch(listUrl);
             if (!listRes.ok) {
@@ -221,17 +212,19 @@
 
             reportsContainer.innerHTML = '';
             for (const file of mdFiles) {
-                // 通过 API 获取文件内容（返回 base64）
                 const contentRes = await fetch(file.url);
                 const contentData = await contentRes.json();
-                const rawMarkdown = decodeBase64(contentData.content);
+                let rawMarkdown = decodeBase64(contentData.content);
+
+                // 重写图片链接
+                rawMarkdown = rewriteImageUrls(rawMarkdown);
 
                 // 提取标题
                 let title = '周报';
                 const titleMatch = rawMarkdown.match(/^#\s+(.+)/m);
                 if (titleMatch) title = titleMatch[1];
 
-                // 移除 front matter（如果有）
+                // 移除 front matter
                 let markdownBody = rawMarkdown;
                 if (rawMarkdown.trim().startsWith('---')) {
                     const secondDash = rawMarkdown.indexOf('---', 3);
@@ -240,7 +233,7 @@
                     }
                 }
 
-                // 提取日期（从文件名）
+                // 提取日期
                 let displayDate = '未知日期';
                 const dateMatch = file.name.match(/(\d{4}-\d{2}-\d{2})/);
                 if (dateMatch) displayDate = dateMatch[1];
