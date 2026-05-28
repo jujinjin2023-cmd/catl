@@ -184,10 +184,23 @@
 
     const reportsContainer = document.getElementById('reportsContainer');
 
+    // 正确解码 GitHub API 返回的 base64 内容（支持中文）
+    function decodeBase64(base64) {
+        // 将 base64 转换为二进制字符串
+        const binaryString = atob(base64);
+        // 将二进制字符串转换为 Uint8Array
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        // 使用 UTF-8 解码
+        return new TextDecoder('utf-8').decode(bytes);
+    }
+
     async function fetchAndRenderReports() {
         reportsContainer.innerHTML = `<div class="loading-state"><span class="dot-pulse"></span> 正在加载周报...</div>`;
         try {
-            // 获取目录下文件列表 (API 返回 JSON)
+            // 获取 _reports 目录下的文件列表
             const listUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${REPORTS_FOLDER}`;
             const listRes = await fetch(listUrl);
             if (!listRes.ok) {
@@ -199,7 +212,7 @@
             }
             const files = await listRes.json();
             const mdFiles = files.filter(f => f.name.endsWith('.md'))
-                                 .sort((a, b) => b.name.localeCompare(a.name)); // 按文件名倒序
+                                 .sort((a, b) => b.name.localeCompare(a.name));
 
             if (mdFiles.length === 0) {
                 reportsContainer.innerHTML = `<div class="empty-state">✨ 第一篇周报正在路上<br>快去 <strong>_reports</strong> 文件夹创建 .md 文件吧</div>`;
@@ -208,18 +221,17 @@
 
             reportsContainer.innerHTML = '';
             for (const file of mdFiles) {
-                // 关键修改：使用 file.url (API 端点) 获取内容，而不是 download_url (raw)
+                // 通过 API 获取文件内容（返回 base64）
                 const contentRes = await fetch(file.url);
                 const contentData = await contentRes.json();
-                // GitHub API 返回的内容是 base64 编码
-                const rawMarkdown = atob(contentData.content);
-                
+                const rawMarkdown = decodeBase64(contentData.content);
+
                 // 提取标题
                 let title = '周报';
                 const titleMatch = rawMarkdown.match(/^#\s+(.+)/m);
                 if (titleMatch) title = titleMatch[1];
 
-                // 移除 front matter (如果有)
+                // 移除 front matter（如果有）
                 let markdownBody = rawMarkdown;
                 if (rawMarkdown.trim().startsWith('---')) {
                     const secondDash = rawMarkdown.indexOf('---', 3);
@@ -227,14 +239,14 @@
                         markdownBody = rawMarkdown.substring(secondDash + 3).trim();
                     }
                 }
-                
+
                 // 提取日期（从文件名）
                 let displayDate = '未知日期';
                 const dateMatch = file.name.match(/(\d{4}-\d{2}-\d{2})/);
                 if (dateMatch) displayDate = dateMatch[1];
 
                 let htmlContent = marked.parse(markdownBody);
-                
+
                 const card = document.createElement('article');
                 card.className = 'report-card';
                 card.innerHTML = `
