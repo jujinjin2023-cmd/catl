@@ -167,7 +167,6 @@
 
     const reportsContainer = document.getElementById('reportsContainer');
 
-    // 正确解码 base64（支持中文）
     function decodeBase64(base64) {
         const binaryString = atob(base64);
         const bytes = new Uint8Array(binaryString.length);
@@ -177,14 +176,26 @@
         return new TextDecoder('utf-8').decode(bytes);
     }
 
-    // 将 Markdown 中的 raw.githubusercontent.com 图片链接替换为 jsdelivr CDN
+    // 增强版图片链接替换：匹配任何 raw.githubusercontent.com 下指向 images/ 的链接，转换成 CDN
     function rewriteImageUrls(markdown) {
-        // 匹配 ![]() 中的 raw.githubusercontent.com 链接
-        // 例如: https://raw.githubusercontent.com/jujinjin2023-CMD/catl/main/images/xxx.png
-        const regex = /!\[.*?\]\((https:\/\/raw\.githubusercontent\.com\/jujinjin2023-CMD\/catl\/main\/images\/[^\)]+)\)/g;
+        // 匹配 ![](任意raw.githubusercontent.com域名路径/images/图片名)
+        const regex = /!\[.*?\]\((https?:\/\/raw\.githubusercontent\.com\/[^\)]+?\/images\/[^\)]+)\)/g;
         return markdown.replace(regex, (match, url) => {
-            // 转换为 jsdelivr 链接
-            const newUrl = url.replace(/https:\/\/raw\.githubusercontent\.com\/jujinjin2023-CMD\/catl\/main\//, 'https://cdn.jsdelivr.net/gh/jujinjin2023-CMD/catl@main/');
+            // 提取仓库和图片路径
+            // url 格式例如: https://raw.githubusercontent.com/jujinjin2023-cmd/catl/refs/heads/main/images/22%E5%91%A8.png
+            // 转换成: https://cdn.jsdelivr.net/gh/jujinjin2023-cmd/catl@main/images/22%E5%91%A8.png
+            let newUrl = url;
+            // 尝试提取用户名和仓库名
+            const repoMatch = url.match(/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\//);
+            if (repoMatch) {
+                const user = repoMatch[1];
+                const repo = repoMatch[2];
+                // 提取 images/ 之后的部分
+                const imagePath = url.split('/images/')[1];
+                if (imagePath) {
+                    newUrl = `https://cdn.jsdelivr.net/gh/${user}/${repo}@main/images/${imagePath}`;
+                }
+            }
             return match.replace(url, newUrl);
         });
     }
@@ -216,15 +227,13 @@
                 const contentData = await contentRes.json();
                 let rawMarkdown = decodeBase64(contentData.content);
 
-                // 重写图片链接
+                // 替换图片链接为 CDN
                 rawMarkdown = rewriteImageUrls(rawMarkdown);
 
-                // 提取标题
                 let title = '周报';
                 const titleMatch = rawMarkdown.match(/^#\s+(.+)/m);
                 if (titleMatch) title = titleMatch[1];
 
-                // 移除 front matter
                 let markdownBody = rawMarkdown;
                 if (rawMarkdown.trim().startsWith('---')) {
                     const secondDash = rawMarkdown.indexOf('---', 3);
@@ -233,7 +242,6 @@
                     }
                 }
 
-                // 提取日期
                 let displayDate = '未知日期';
                 const dateMatch = file.name.match(/(\d{4}-\d{2}-\d{2})/);
                 if (dateMatch) displayDate = dateMatch[1];
